@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index2</title>
+</head>
+<body>
+<div><h1>Use Shared Worker</h1></div>
+<button id="button"> INDEX-2</button>
+<div><span>click it<span id="time"></span></span></div>
+<script>
+    var button=document.getElementById('button');
+    var worker = new SharedWorker('SharedWorker.js');
+    worker.port.start();
+    var time;
+    button.addEventListener('click',function (ev) {
+        worker.port.postMessage('start');
+    });
+
+    var timeDom = document.getElementById('time');
+    worker.port.onmessage=function (ev) {
+        timeDom.innerHTML = ev.data;
+        console.log(ev.data);
+    }
+</script>
+</body>
+</html>

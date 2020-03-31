@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>optimize</title>
+
+</head>
+<body>
+<button id="load">load</button>
+<div id="normal" ></div>
+<p>normal</p>
+
+<button id="load1">load</button>
+<div id="first"></div>
+<p>JSON</p>
+
+<button id="load2">load</button>
+<div id="second"></div>
+<p>ArrayBuffer</p>
+<script>
+
+
+    document.getElementById("load").onclick=load;
+    document.getElementById("load1").onclick=load1;
+    document.getElementById("load2").onclick=load2;
+    function load() {
+        pre=new Date().getTime();
+        method();
+    } function load1() {
+
+        pre=new Date().getTime();
+        method1();
+    } function load2() {
+
+        pre=new Date().getTime();
+        method2();
+    }
+
+    var ctx;
+    var canvas = document.createElement('canvas');
+    ctx=canvas.getContext('2d');
+    image=new Image();
+    var imageURL = "image.jpg";
+    image.src=imageURL;
+    var pre = 0;
+
+    function messageHandler(e) {
+
+        var  messageType = e.data.type;
+        switch (messageType) {
+            case("0"):
+                document.getElementById('normal').innerText = e.data.mytime-pre;
+                break;
+            case (undefined):
+                document.getElementById('first').innerText = e.data.mytime-pre;
+                break;
+            case ('2'):
+                document.getElementById('second').innerText = e.data.mytime-pre;
+                break;
+        }
+    }
+    function method() {
+        //方案一
+        var imageData = ctx.createImageData(image.width, image.height);
+        var worker = new Worker('optimization.js');
+
+        worker.addEventListener("message",messageHandler,true);
+        var data = {
+            type:"0",
+            data: imageData.data,
+            width: imageData.width,
+            height: imageData.height
+        };
+        // 将传递的参数转换成字符串
+
+        worker.postMessage(data);
+    }
+
+    function method1() {
+        //方案一
+        var imageData = ctx.createImageData(image.width, image.height);
+        var worker = new Worker('optimization.js');
+
+        worker.addEventListener("message",messageHandler,true);
+        var data = {
+            type:"1",
+            data: imageData.data,
+            width: imageData.width,
+            height: imageData.height
+        };
+        // 将传递的参数转换成字符串
+        worker.postMessage(JSON.stringify(data));
+    }
+
+    function method2() {
+        pre=new Date().getTime();
+
+        // 方案二
+        var imageData = ctx.createImageData(image.width, image.height);
+        var worker = new Worker('optimization.js');
+
+        worker.addEventListener("message",messageHandler,true);
+        // 转化为类型数组进行传递
+        var int8s = new Int8Array(imageData.data);
+        var data = {
+            type:"2",
+            data: int8s,
+            width: imageData.width,
+            height: imageData.height
+        };
+        // 在postMessage方法的第二个参数中指定transferList
+        worker.postMessage(data, [data.data.buffer]);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
